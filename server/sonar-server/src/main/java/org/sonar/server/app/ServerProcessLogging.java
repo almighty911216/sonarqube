@@ -88,10 +88,9 @@ public abstract class ServerProcessLogging {
     LoggerContext ctx = helper.getRootContext();
     ctx.reset();
 
-    helper.enableJulChangePropagation(ctx);
-
     configureRootLogger(props);
     helper.apply(logLevelConfig, props);
+    helper.enableJulChangePropagation(ctx);
     configureDirectToConsoleLoggers(ctx, STARTUP_LOGGER_NAME);
 
     extendConfigure();
