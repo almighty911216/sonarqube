@@ -19,14 +19,20 @@
  */
 package org.sonar.server.platform.db.migration.version.v65;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import org.sonar.db.Database;
+import org.sonar.db.dialect.MsSql;
 import org.sonar.server.platform.db.migration.sql.DropColumnsBuilder;
 import org.sonar.server.platform.db.migration.step.DdlChange;
 
 public class DropIsDefaultColumnFromRulesProfiles extends DdlChange {
 
   private static final String TABLE_NAME = "rules_profiles";
+  private static final String COLUMN_NAME = "is_default";
 
   public DropIsDefaultColumnFromRulesProfiles(Database db) {
     super(db);
@@ -34,6 +40,29 @@ public class DropIsDefaultColumnFromRulesProfiles extends DdlChange {
 
   @Override
   public void execute(Context context) throws SQLException {
-    context.execute(new DropColumnsBuilder(getDialect(), TABLE_NAME, "is_default").build());
+    if (getDialect().getId().equals(MsSql.ID)) {
+      // this should be handled automatically by DropColumnsBuilder
+      dropMssqlConstraints();
+    }
+
+    context.execute(new DropColumnsBuilder(getDialect(), TABLE_NAME, COLUMN_NAME).build());
+  }
+
+  private void dropMssqlConstraints() throws SQLException {
+    try (Connection connection = getDatabase().getDataSource().getConnection();
+      PreparedStatement pstmt = connection
+        .prepareStatement("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE where TABLE_NAME = '" + TABLE_NAME + "' AND COLUMN_NAME = '" + COLUMN_NAME + "'");
+      ResultSet rs = pstmt.executeQuery()) {
+      while (rs.next()) {
+        String constraintName = rs.getString(1);
+        dropMssqlConstraint(connection, constraintName);
+      }
+    }
+  }
+
+  private void dropMssqlConstraint(Connection connection, String constraintName) throws SQLException {
+    try (Statement stmt = connection.createStatement()) {
+      stmt.executeUpdate("ALTER TABLE " + TABLE_NAME + " DROP CONSTRAINT " + constraintName);
+    }
   }
 }
