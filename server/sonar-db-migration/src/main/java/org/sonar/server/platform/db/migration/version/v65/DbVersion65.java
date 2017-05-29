@@ -29,6 +29,8 @@ public class DbVersion65 implements DbVersion {
     registry
       .add(1700, "Drop table AUTHORS", DropTableAuthors.class)
       .add(1701, "Clean orphans from USER_ROLES", CleanOrphanRowsInUserRoles.class)
-      .add(1702, "Clean orphans from GROUP_ROLES", CleanOrphanRowsInGroupRoles.class);
+      .add(1702, "Clean orphans from GROUP_ROLES", CleanOrphanRowsInGroupRoles.class)
+      .add(1703, "Populate EVENTS.COMPONENT_UUID", PopulateEventsComponentUuid.class)
+      .add(1704, "Make EVENTS.COMPONENT_UUID not nullable", MakeEventsComponentUuidNotNullable.class);
   }
 }
