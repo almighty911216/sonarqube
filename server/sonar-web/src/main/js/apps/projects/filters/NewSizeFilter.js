@@ -18,8 +18,69 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 import React from 'react';
-import SizeFilter from './SizeFilter';
+import FilterContainer from './FilterContainer';
+import FilterHeader from './FilterHeader';
+import SortingFilter from './SortingFilter';
+import { translate } from '../../../helpers/l10n';
+import { getSizeRatingLabel } from '../../../helpers/ratings';
 
-export default function NewSizeFilter(props) {
-  return <SizeFilter {...props} property="new_lines" className="leak-facet-box" />;
+export default class NewSizeFilter extends React.PureComponent {
+  static propTypes = {
+    className: React.PropTypes.string,
+    query: React.PropTypes.object.isRequired,
+    isFavorite: React.PropTypes.bool,
+    organization: React.PropTypes.object,
+    property: React.PropTypes.string
+  };
+
+  static defaultProps = {
+    property: 'new_lines'
+  };
+
+  getFacetValueForOption(facet, option) {
+    const map = [
+      '*-1000.0',
+      '1000.0-10000.0',
+      '10000.0-100000.0',
+      '100000.0-500000.0',
+      '500000.0-*'
+    ];
+    return facet[map[option - 1]];
+  }
+
+  renderOption(option) {
+    return (
+      <span>
+        {getSizeRatingLabel(option)}
+      </span>
+    );
+  }
+
+  render() {
+    return (
+      <FilterContainer
+        property={this.props.property}
+        className="leak-facet-box"
+        options={[1, 2, 3, 4, 5]}
+        query={this.props.query}
+        renderOption={this.renderOption}
+        isFavorite={this.props.isFavorite}
+        organization={this.props.organization}
+        getFacetValueForOption={this.getFacetValueForOption}
+        highlightUnder={1}
+        header={
+          <FilterHeader name={translate('metric_domain.new_size')}>
+            <SortingFilter
+              property={this.props.property}
+              query={this.props.query}
+              isFavorite={this.props.isFavorite}
+              organization={this.props.organization}
+              leftText={translate('biggest')}
+              rightText={translate('smallest')}
+            />
+          </FilterHeader>
+        }
+      />
+    );
+  }
 }

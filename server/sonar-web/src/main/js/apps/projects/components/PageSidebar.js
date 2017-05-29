@@ -60,6 +60,7 @@ export default function PageSidebar({
   const isLeakView = view === 'leak';
   const basePathName = organization ? `/organizations/${organization.key}/projects` : '/projects';
   const pathname = basePathName + (isFavorite ? '/favorite' : '');
+  const facetProps = { query, isFavorite, organization };
 
   let linkQuery: ?{ view: string, visualization?: string };
   if (view !== 'overall') {
@@ -83,82 +84,27 @@ export default function PageSidebar({
           </div>}
 
         <h3>{translate('filters')}</h3>
-        <SearchFilterContainer query={query} isFavorite={isFavorite} organization={organization} />
+        <SearchFilterContainer {...facetProps} />
       </div>
-      <QualityGateFilter query={query} isFavorite={isFavorite} organization={organization} />
+      <QualityGateFilter {...facetProps} />
       {!isLeakView && [
-        <ReliabilityFilter
-          key="reliability"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <SecurityFilter
-          key="security"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <MaintainabilityFilter
-          key="maintainability"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <CoverageFilter
-          key="coverage"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <DuplicationsFilter
-          key="duplications"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <SizeFilter key="size" query={query} isFavorite={isFavorite} organization={organization} />
+        <ReliabilityFilter key="reliability" {...facetProps} />,
+        <SecurityFilter key="security" {...facetProps} />,
+        <MaintainabilityFilter key="maintainability" {...facetProps} />,
+        <CoverageFilter key="coverage" {...facetProps} />,
+        <DuplicationsFilter key="duplications" {...facetProps} />,
+        <SizeFilter key="size" {...facetProps} />
       ]}
       {isLeakView && [
-        <NewReliabilityFilter
-          key="new_reliability"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <NewSecurityFilter
-          key="new_security"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <NewMaintainabilityFilter
-          key="new_maintainability"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <NewCoverageFilter
-          key="new_coverage"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <NewDuplicationsFilter
-          key="new_duplications"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />,
-        <NewSizeFilter
-          key="new_size"
-          query={query}
-          isFavorite={isFavorite}
-          organization={organization}
-        />
+        <NewReliabilityFilter key="new_reliability" {...facetProps} />,
+        <NewSecurityFilter key="new_security" {...facetProps} />,
+        <NewMaintainabilityFilter key="new_maintainability" {...facetProps} />,
+        <NewCoverageFilter key="new_coverage" {...facetProps} />,
+        <NewDuplicationsFilter key="new_duplications" {...facetProps} />,
+        <NewSizeFilter key="new_size" {...facetProps} />
       ]}
-      <LanguagesFilterContainer query={query} isFavorite={isFavorite} organization={organization} />
-      <TagsFilterContainer query={query} isFavorite={isFavorite} organization={organization} />
+      <LanguagesFilterContainer {...facetProps} />
+      <TagsFilterContainer {...facetProps} />
     </div>
   );
 }
