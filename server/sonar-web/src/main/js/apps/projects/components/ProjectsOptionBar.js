@@ -22,16 +22,19 @@ import React from 'react';
 import classNames from 'classnames';
 import CloseIcon from '../../../components/icons-components/CloseIcon';
 import PerspectiveSelect from './PerspectiveSelect';
+import ProjectsSortingSelect from './ProjectsSortingSelect';
 
 type Props = {
   onPerspectiveChange: ({ view: string, visualization?: string }) => void,
+  onSortChange: (sort: string, desc: boolean) => void,
   onToggleOptionBar: boolean => void,
   open: boolean,
+  selectedSort: string,
   view: string,
   visualization?: string
 };
 
-export default class ProjectOptionBar extends React.PureComponent {
+export default class ProjectsOptionBar extends React.PureComponent {
   props: Props;
 
   closeBar = (evt: Event & { currentTarget: HTMLElement }) => {
@@ -45,18 +48,23 @@ export default class ProjectOptionBar extends React.PureComponent {
     return (
       <div className="projects-topbar">
         <div className={classNames('projects-topbar-actions', { open })}>
-          <a
-            className="projects-topbar-button projects-topbar-button-close"
-            href="#"
-            onClick={this.closeBar}>
+          <a className="projects-topbar-button button-icon" href="#" onClick={this.closeBar}>
             <CloseIcon />
           </a>
           <div className="projects-topbar-actions-inner">
             <PerspectiveSelect
+              className="projects-topbar-item"
               onChange={this.props.onPerspectiveChange}
               view={this.props.view}
               visualization={this.props.visualization}
             />
+            {this.props.view !== 'visualizations' &&
+              <ProjectsSortingSelect
+                className="projects-topbar-item"
+                onChange={this.props.onSortChange}
+                selectedSort={this.props.selectedSort}
+                view={this.props.view}
+              />}
           </div>
         </div>
       </div>

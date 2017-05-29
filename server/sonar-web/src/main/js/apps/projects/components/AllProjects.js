@@ -21,7 +21,7 @@
 import React from 'react';
 import Helmet from 'react-helmet';
 import PageHeaderContainer from './PageHeaderContainer';
-import ProjectOptionBar from './ProjectOptionBar';
+import ProjectsOptionBar from './ProjectsOptionBar';
 import ProjectsListContainer from './ProjectsListContainer';
 import ProjectsListFooterContainer from './ProjectsListFooterContainer';
 import PageSidebar from './PageSidebar';
@@ -76,14 +76,25 @@ export default class AllProjects extends React.PureComponent {
   handleOptionBarToggle = (open: boolean) => this.setState({ optionBarOpen: open });
 
   handlePerspectiveChange = ({ view, visualization }: { view: string, visualization?: string }) => {
-    this.props.router.push({
-      pathname: this.props.location.pathname,
-      query: {
-        ...this.props.location.query,
-        view: view === 'overall' ? undefined : view,
-        visualization
-      }
-    });
+    const query = {
+      view: view === 'overall' ? undefined : view,
+      visualization,
+      sort: undefined
+    };
+
+    if (this.state.query.view === 'leak' || view === 'leak') {
+      this.props.router.push({ pathname: this.props.location.pathname, query });
+    } else {
+      this.updateLocationQuery(query);
+    }
+  };
+
+  handleSortChange = (sort: string, desc: boolean) => {
+    if (sort === 'name' && !desc) {
+      this.updateLocationQuery({ sort: undefined });
+    } else {
+      this.updateLocationQuery({ sort: (desc ? '-' : '') + sort });
+    }
   };
 
   handleQueryChange() {
@@ -92,12 +103,23 @@ export default class AllProjects extends React.PureComponent {
     this.props.fetchProjects(query, this.props.isFavorite, this.props.organization);
   }
 
+  updateLocationQuery = (newQuery: { [string]: ?string }) => {
+    this.props.router.push({
+      pathname: this.props.location.pathname,
+      query: {
+        ...this.props.location.query,
+        ...newQuery
+      }
+    });
+  };
+
   render() {
     const { query, optionBarOpen } = this.state;
     const isFiltered = Object.keys(query).some(key => query[key] != null);
 
     const view = query.view || 'overall';
     const visualization = query.visualization || 'risk';
+    const selectedSort = query.sort || 'name';
 
     const top = (this.props.organization ? 95 : 30) + (optionBarOpen ? 45 : 0);
 
@@ -105,10 +127,12 @@ export default class AllProjects extends React.PureComponent {
       <div>
         <Helmet title={translate('projects.page')} />
 
-        <ProjectOptionBar
+        <ProjectsOptionBar
           onPerspectiveChange={this.handlePerspectiveChange}
+          onSortChange={this.handleSortChange}
           onToggleOptionBar={this.handleOptionBarToggle}
           open={optionBarOpen}
+          selectedSort={selectedSort}
           view={view}
           visualization={visualization}
         />

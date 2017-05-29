@@ -47,6 +47,26 @@ export const saveAll = () => save(LOCALSTORAGE_ALL);
 
 export const saveFavorite = () => save(LOCALSTORAGE_FAVORITE);
 
+export const SORTING_METRICS = [
+  'name',
+  'reliability',
+  'security',
+  'maintainability',
+  'coverage',
+  'duplications',
+  'size'
+];
+
+export const SORTING_LEAK_METRICS = [
+  'name',
+  'new_reliability',
+  'new_security',
+  'new_maintainability',
+  'new_coverage',
+  'new_duplications',
+  'new_lines'
+];
+
 export const VIEWS = ['overall', 'leak'];
 
 export const VISUALIZATIONS = [
