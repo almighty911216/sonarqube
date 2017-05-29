@@ -61,6 +61,7 @@ public class PermissionQuery {
 
   private final int pageSize;
   private final int pageOffset;
+  private final int pageIndex;
 
   private PermissionQuery(Builder builder) {
     this.organizationUuid = builder.organizationUuid;
@@ -73,6 +74,7 @@ public class PermissionQuery {
     this.searchQueryToSqlLowercase = searchQueryToSql == null ? null : searchQueryToSql.toLowerCase(Locale.ENGLISH);
     this.pageSize = builder.pageSize;
     this.pageOffset = offset(builder.pageIndex, builder.pageSize);
+    this.pageIndex = builder.pageIndex;
   }
 
   public String getOrganizationUuid() {
@@ -122,6 +124,10 @@ public class PermissionQuery {
     return pageOffset;
   }
 
+  public int getPageIndex() {
+    return pageIndex;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -134,8 +140,8 @@ public class PermissionQuery {
     private String searchQuery;
     private boolean withAtLeastOnePermission;
 
-    private Integer pageIndex = DEFAULT_PAGE_INDEX;
-    private Integer pageSize = DEFAULT_PAGE_SIZE;
+    private Integer pageIndex;
+    private Integer pageSize;
 
     private Builder() {
       // enforce method constructor

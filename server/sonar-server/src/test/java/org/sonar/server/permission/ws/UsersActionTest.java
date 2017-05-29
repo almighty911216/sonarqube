@@ -19,6 +19,8 @@
  */
 package org.sonar.server.permission.ws;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.sonar.api.server.ws.WebService.Param;
 import org.sonar.api.server.ws.WebService.SelectionMode;
@@ -30,9 +32,13 @@ import org.sonar.server.exceptions.BadRequestException;
 import org.sonar.server.exceptions.ForbiddenException;
 import org.sonar.server.exceptions.UnauthorizedException;
 
+import static org.apache.commons.lang.StringUtils.countMatches;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.sonar.api.server.ws.WebService.Param.PAGE;
+import static org.sonar.api.server.ws.WebService.Param.PAGE_SIZE;
 import static org.sonar.api.server.ws.WebService.Param.TEXT_QUERY;
 import static org.sonar.api.web.UserRole.ISSUE_ADMIN;
+import static org.sonar.core.permission.GlobalPermissions.PROVISIONING;
 import static org.sonar.core.permission.GlobalPermissions.SYSTEM_ADMIN;
 import static org.sonar.db.component.ComponentTesting.newPrivateProjectDto;
 import static org.sonar.db.permission.OrganizationPermission.ADMINISTER;
@@ -222,6 +228,65 @@ public class UsersActionTest extends BasePermissionWsTest<UsersAction> {
       .getInput();
 
     assertThat(result).contains("login-1", "login-2", "login-3");
+  }
+
+  @Test
+  public void search_for_users_is_paginated() throws Exception {
+    for (int i = 9; i >= 0; i--) {
+      UserDto user = db.users().insertUser(newUserDto().setName("user-" + i));
+      db.organizations().addMember(db.getDefaultOrganization(), user);
+      db.users().insertPermissionOnUser(user, ADMINISTER);
+      db.users().insertPermissionOnUser(user, ADMINISTER_QUALITY_GATES);
+    }
+    loginAsAdmin(db.getDefaultOrganization());
+
+    assertJson(newRequest().setParam(PAGE, "1").setParam(PAGE_SIZE, "2").execute().getInput()).withStrictArrayOrder().isSimilarTo("{\n" +
+      "  \"paging\": {\n" +
+      "    \"pageIndex\": 1,\n" +
+      "    \"pageSize\": 2,\n" +
+      "    \"total\": 10\n" +
+      "  },\n" +
+      "  \"users\": [\n" +
+      "    {\n" +
+      "      \"name\": \"user-0\"\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"name\": \"user-1\"\n" +
+      "    }\n" +
+      "  ]\n" +
+      "}");
+    assertJson(newRequest().setParam(PAGE, "3").setParam(PAGE_SIZE, "4").execute().getInput()).withStrictArrayOrder().isSimilarTo("{\n" +
+      "  \"paging\": {\n" +
+      "    \"pageIndex\": 3,\n" +
+      "    \"pageSize\": 4,\n" +
+      "    \"total\": 10\n" +
+      "  },\n" +
+      "  \"users\": [\n" +
+      "    {\n" +
+      "      \"name\": \"user-8\"\n" +
+      "    },\n" +
+      "    {\n" +
+      "      \"name\": \"user-9\"\n" +
+      "    }\n" +
+      "  ]\n" +
+      "}");
+  }
+
+  @Test
+  public void return_more_than_20_permissions() {
+    loginAsAdmin(db.getDefaultOrganization());
+    for (int i = 0; i < 30; i++) {
+      UserDto user = db.users().insertUser(newUserDto().setLogin("user-" + i));
+      db.organizations().addMember(db.getDefaultOrganization(), user);
+      db.users().insertPermissionOnUser(user, SCAN);
+    }
+
+    String result = newRequest()
+      .setParam(PAGE_SIZE, "100")
+      .execute()
+      .getInput();
+
+    assertThat(countMatches(result, "scan")).isEqualTo(30);
   }
 
   @Test
